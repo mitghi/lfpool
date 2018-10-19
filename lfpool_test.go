@@ -1,32 +1,32 @@
-// MIT License
-//
-// Copyright (c) 2017 Mike Taghavi <mitghi@me.com>
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
+/**
+* MIT License
+*
+* Copyright (c) 2017 Mike Taghavi <mitghi@me.com>
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+**/
 
 package lfpool
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
-	"runtime"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -102,45 +102,6 @@ func TestExpB(t *testing.T) {
 	}
 	// for an := bp.Next(); (*lfslice)(an) != nil; an = ((*markedPtr)((*lfslice)(an).getNextptr()).Next()) {
 	// }
-}
-
-func TestExpC(t *testing.T) {
-	var (
-		q      *lfqueue        = newlfqueue()
-		wg     *sync.WaitGroup = &sync.WaitGroup{}
-		pcount uint64
-		rcount uint64
-	)
-	for i := 0; i < 10; i++ {
-		wg.Add(1)
-		go func(wg *sync.WaitGroup, q *lfqueue, i int) {
-			for j := 0; j < 100; j++ {
-				content := fmt.Sprintf("value_%d_from_coroutine_%d", j, i)
-				b := []byte(content)
-				q.push(&b)
-				atomic.AddUint64(&pcount, 1)
-				runtime.Gosched()
-			}
-			wg.Done()
-		}(wg, q, i)
-
-		wg.Add(1)
-		go func(wg *sync.WaitGroup, q *lfqueue, i int) {
-			for j := 0; j < 1000; j++ {
-				content := q.pop()
-				if content != nil {
-					atomic.AddUint64(&rcount, 1)
-				}
-				runtime.Gosched()
-			}
-			wg.Done()
-		}(wg, q, i)
-	}
-	wg.Wait()
-	if rcount != pcount {
-		t.Fatal("inconsistent state", rcount, pcount)
-	}
-	log.Printf("read(%d)==write(%d)", rcount, pcount)
 }
 
 func TestExpD(t *testing.T) {
