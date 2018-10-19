@@ -63,7 +63,7 @@ func TestExpA(t *testing.T) {
 
 func TestExpB(t *testing.T) {
 	var (
-		bp *BuffPool       = NewBuffPool()
+		bp *LFPool         = NewLFPool()
 		wg *sync.WaitGroup = &sync.WaitGroup{}
 	)
 	ch := bp.Get(67)
@@ -72,7 +72,7 @@ func TestExpB(t *testing.T) {
 	fmt.Println(ch, len(ch), cap(ch))
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go func(bp *BuffPool, wg *sync.WaitGroup) {
+		go func(bp *LFPool, wg *sync.WaitGroup) {
 			for i := 0; i < 100; i++ {
 				ch := bp.Get(rand.Intn(65535))
 				time.Sleep(time.Millisecond * time.Duration(rand.Intn(50)))
@@ -82,7 +82,7 @@ func TestExpB(t *testing.T) {
 		}(bp, wg)
 
 		wg.Add(1)
-		go func(bp *BuffPool, wg *sync.WaitGroup) {
+		go func(bp *LFPool, wg *sync.WaitGroup) {
 			for i := 0; i < 100; i++ {
 				ch := bp.Get(0)
 				if rand.Int()%2 == 0 {
@@ -105,7 +105,7 @@ func TestExpB(t *testing.T) {
 }
 
 func TestExpD(t *testing.T) {
-	bp := NewBuffPool()
+	bp := NewLFPool()
 	b := bp.GetBuffer(63)
 	if cap(b.Data) != 64 {
 		t.Fatal("invalid capacity")
@@ -118,7 +118,7 @@ func TestExpD(t *testing.T) {
 
 func TestExpE(t *testing.T) {
 	var (
-		bp *BuffPool       = NewBuffPool()
+		bp *LFPool         = NewLFPool()
 		wg *sync.WaitGroup = &sync.WaitGroup{}
 	)
 	ch := bp.Get(67)
@@ -127,7 +127,7 @@ func TestExpE(t *testing.T) {
 	fmt.Println(ch, len(ch), cap(ch))
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go func(bp *BuffPool, wg *sync.WaitGroup) {
+		go func(bp *LFPool, wg *sync.WaitGroup) {
 			for i := 0; i < 100; i++ {
 				ch := bp.Get(rand.Intn(65535))
 				time.Sleep(time.Millisecond * time.Duration(rand.Intn(50)))
@@ -137,7 +137,7 @@ func TestExpE(t *testing.T) {
 		}(bp, wg)
 
 		wg.Add(1)
-		go func(bp *BuffPool, wg *sync.WaitGroup) {
+		go func(bp *LFPool, wg *sync.WaitGroup) {
 			for i := 0; i < 100; i++ {
 				ch := bp.Get(0)
 				if rand.Int()%2 == 0 {
@@ -161,7 +161,7 @@ func TestExpE(t *testing.T) {
 
 func TestExpF(t *testing.T) {
 	var (
-		bp *BuffPool       = WithStats()
+		bp *LFPool         = NewLFPoolWithStats()
 		wg *sync.WaitGroup = &sync.WaitGroup{}
 	)
 	ch := bp.Get(67)
@@ -170,7 +170,7 @@ func TestExpF(t *testing.T) {
 	fmt.Println(ch, len(ch), cap(ch))
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go func(bp *BuffPool, wg *sync.WaitGroup) {
+		go func(bp *LFPool, wg *sync.WaitGroup) {
 			for i := 0; i < 100; i++ {
 				ch := bp.Get(rand.Intn(65535))
 				time.Sleep(time.Millisecond * time.Duration(rand.Intn(50)))
@@ -180,7 +180,7 @@ func TestExpF(t *testing.T) {
 		}(bp, wg)
 
 		wg.Add(1)
-		go func(bp *BuffPool, wg *sync.WaitGroup) {
+		go func(bp *LFPool, wg *sync.WaitGroup) {
 			for i := 0; i < 100; i++ {
 				ch := bp.Get(0)
 				if rand.Int()%2 == 0 {
@@ -190,7 +190,7 @@ func TestExpF(t *testing.T) {
 			wg.Done()
 		}(bp, wg)
 		wg.Add(1)
-		go func(bp *BuffPool, wg *sync.WaitGroup) {
+		go func(bp *LFPool, wg *sync.WaitGroup) {
 			for i := 0; i < 5; i++ {
 				time.Sleep(time.Millisecond * 50)
 				_ = bp.slots[rand.Intn(21)]
@@ -212,12 +212,12 @@ func TestExpF(t *testing.T) {
 
 func TestExpG(t *testing.T) {
 	var (
-		bp *BuffPool       = NewBuffPool()
+		bp *LFPool         = NewLFPool()
 		wg *sync.WaitGroup = &sync.WaitGroup{}
 	)
 	for i := 0; i < 10; i++ {
 		wg.Add(1)
-		go func(bp *BuffPool, wg *sync.WaitGroup) {
+		go func(bp *LFPool, wg *sync.WaitGroup) {
 			for i := 0; i < 100; i++ {
 				ch := bp.Get(rand.Intn(65535))
 				time.Sleep(time.Millisecond * time.Duration(rand.Intn(50)))
@@ -227,7 +227,7 @@ func TestExpG(t *testing.T) {
 		}(bp, wg)
 
 		wg.Add(1)
-		go func(bp *BuffPool, wg *sync.WaitGroup) {
+		go func(bp *LFPool, wg *sync.WaitGroup) {
 			for i := 0; i < 100; i++ {
 				ch := bp.Get(0)
 				if rand.Int()%2 == 0 {
@@ -237,13 +237,13 @@ func TestExpG(t *testing.T) {
 			wg.Done()
 		}(bp, wg)
 		wg.Add(1)
-		go func(bp *BuffPool, wg *sync.WaitGroup) {
-			var _s bpnode
+		go func(bp *LFPool, wg *sync.WaitGroup) {
+			var _s pslot
 			var ssize uintptr = unsafe.Sizeof(_s)
 			for i := 0; i < 5; i++ {
 				time.Sleep(time.Millisecond * time.Duration(rand.Intn(50)))
 				slot := bp.ldSlot(rand.Intn(32), ssize)
-				_ = (*bpnode)(slot).detach()
+				_ = (*pslot)(slot).detach()
 			}
 			wg.Done()
 		}(bp, wg)
@@ -261,7 +261,7 @@ func TestExpG(t *testing.T) {
 }
 
 func TestExpH(t *testing.T) {
-	bp := NewBuffPool()
+	bp := NewLFPool()
 	a := bp.Get()
 	fmt.Println(len(a), cap(a))
 	if ac, al := cap(a), len(a); ac != 64 && al != 64 {
